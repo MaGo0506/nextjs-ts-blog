@@ -3,12 +3,16 @@ import {deskTool} from 'sanity/desk'
 import {visionTool} from '@sanity/vision'
 import {schemaTypes} from './schemas'
 
-export default defineConfig({
-  name: 'default',
-  title: 'nextjs-ts-blog',
+const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!;
+const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET!;
 
-  projectId: 'gz1h8f8f',
-  dataset: 'production',
+export default defineConfig({
+  basePath: '/studio',
+  name: 'ZVELTE_Blog_Content',
+  title: 'ZVELTE Blog Content',
+
+  projectId,
+  dataset,
 
   plugins: [deskTool(), visionTool()],
 
