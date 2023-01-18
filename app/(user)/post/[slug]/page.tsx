@@ -2,7 +2,7 @@ import {groq} from "next-sanity";
 import {client} from "../../../../lib/sanity.client";
 import Image from "next/image";
 import urlFor from "../../../../lib/urlFor";
-import {Category} from "../../../../typings";
+import {Category, Post} from "../../../../typings";
 import { PortableText } from "@portabletext/react";
 import {RichTextComponents} from "../../../../components/RichTextComponents";
 
@@ -11,16 +11,33 @@ type Props = {
         slug: string
     }
 }
-const Post = async ({params: {slug}}: Props) => {
+
+export const revalidate = 120;
+export async function generateStaticParams() {
+    const query = groq`*[_type=='post']
+    {
+        slug
+    }`;
+
+    const slugs: Post[] = await client.fetch(query)
+    const slugRoutes = slugs.map((slug) => slug.slug.current);
+
+    return slugRoutes.map((slug) => ({
+        slug: slug
+    }))
+}
+
+const SinglePost = async ({params: {slug}}: Props) => {
     const query = groq`
        *[_type=='post' && slug.current == $slug][0]
        {
          ...,
          author->,
-         categories[]->
+         categories[]->,
        }
-    `
-    const post: Post = await client.fetch(query, {slug})
+    `;
+
+    const post: Post = await client.fetch(query, {slug});
 
     return (
         <article className="px-10 pb-28">
@@ -76,7 +93,7 @@ const Post = async ({params: {slug}}: Props) => {
                                     <p
                                         className="bg-gray-800 text-center text-white
                                             px-3 py-1 rounded-full text-sm font-semibold"
-                                        key={category._id}
+                                            key={category._id}
                                     >
                                         {category.title}
                                     </p>
@@ -95,4 +112,4 @@ const Post = async ({params: {slug}}: Props) => {
     );
 }
 
-export default Post
+export default SinglePost
